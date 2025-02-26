@@ -20,7 +20,7 @@ persistence:
 
 service:
   type: ClusterIP
-  rpcPort: 8545
+  rpcPort: 8555
   wsPort: 8546
   metricsPort: 6060
 
