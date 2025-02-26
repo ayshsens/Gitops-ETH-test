@@ -48,22 +48,22 @@ spec:
             - name: p2p-udp
               containerPort: 30303
               protocol: UDP
-          readinessProbe:
-            exec:
-              command:
-                - /scripts/check-node-sync.sh
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
-          livenessProbe:
-            exec:
-              command:
-                - /scripts/check-node-health.sh
-            initialDelaySeconds: 120
-            periodSeconds: 20
-            timeoutSeconds: 5
-            failureThreshold: 3
+          # readinessProbe:
+          #   exec:
+          #     command:
+          #       - /scripts/check-node-sync.sh
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 10
+          #   timeoutSeconds: 5
+          #   failureThreshold: 3
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - /scripts/check-node-health.sh
+          #   initialDelaySeconds: 120
+          #   periodSeconds: 20
+          #   timeoutSeconds: 5
+          #   failureThreshold: 3
           volumeMounts:
             - name: data
               mountPath: /root/.ethereum
