@@ -33,9 +33,9 @@ spec:
             - --metrics
             - --metrics.addr=0.0.0.0
             - --metrics.port={{ .Values.service.metricsPort }}
-            # {{- range .Values.bootNodes }}
-            # - --bootnodes={{ . }}
-            # {{- end }}
+            {{- range .Values.bootNodes }}
+            - --bootnodes={{ . }}
+            {{- end }}
           ports:
             - name: http-rpc
               containerPort: {{ .Values.service.rpcPort }}
