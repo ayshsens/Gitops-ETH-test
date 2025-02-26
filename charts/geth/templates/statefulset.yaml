@@ -22,20 +22,22 @@ spec:
             - name: GETH_PORT
               value: "8545"
           args:
-            - --{{ .Values.network }}
+            - --holesky
+            - --syncmode=snap
             - --http
             - --http.addr=0.0.0.0
-            - --http.port={{ .Values.service.rpcPort }}
+            - --http.port=8555
             - --http.api=eth,net,web3,txpool,debug
             - --ws
             - --ws.addr=0.0.0.0
-            - --ws.port={{ .Values.service.wsPort }}
+            - --ws.port=8546
+            - --authrpc.addr=0.0.0.0
+            - --authrpc.port=8551
+            - --authrpc.jwtsecret=/secrets/jwt.hex
             - --metrics
             - --metrics.addr=0.0.0.0
-            - --metrics.port={{ .Values.service.metricsPort }}
-            {{- range .Values.bootNodes }}
-            - --bootnodes={{ . }}
-            {{- end }}
+            - --metrics.port=6060
+            - --bootnodes=enode://d860a01f9722d78051619d1e2351aba3f43f943f6f00718d1b9baa4100932a67f8c1d04a06f1243cababae63b0413492f7dc5b6ab3598e4004c91e24c80ac4b@34.159.55.123:30303,enode://4b5d05e08a0c242b7d9b11b7f2b8305b6a85a5d6c0ff3763a554d147f628733c8f40a0d5c8d6b5a4dcee8b54a4cdf480a53dc6d5b0f3054b0a6b8526dadb1a2@34.159.100.56:30303
           ports:
             - name: http-rpc
               containerPort: {{ .Values.service.rpcPort }}
