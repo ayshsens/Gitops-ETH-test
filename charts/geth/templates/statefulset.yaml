@@ -18,6 +18,9 @@ spec:
         - name: geth
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: GETH_PORT
+              value: "8545"
           args:
             - --{{ .Values.network }}
             - --http
@@ -30,9 +33,9 @@ spec:
             - --metrics
             - --metrics.addr=0.0.0.0
             - --metrics.port={{ .Values.service.metricsPort }}
-            {{- range .Values.bootNodes }}
-            - --bootnodes={{ . }}
-            {{- end }}
+            # {{- range .Values.bootNodes }}
+            # - --bootnodes={{ . }}
+            # {{- end }}
           ports:
             - name: http-rpc
               containerPort: {{ .Values.service.rpcPort }}

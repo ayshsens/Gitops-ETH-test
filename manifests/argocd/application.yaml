@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/ayushvgcsns/Gitops-ETH.git
+    repoURL: https://github.com/ayshsens/Gitops-ETH-test.git
     path: charts/geth
     targetRevision: HEAD
   destination:
