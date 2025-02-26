@@ -18,9 +18,9 @@ spec:
         - name: geth
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env:
-            - name: GETH_PORT
-              value: "8545"
+          # env:
+          #   - name: GETH_PORT
+          #     value: "8545"
           args:
             - --{{ .Values.network }}
             - --http
