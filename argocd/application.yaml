@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: geth
+  namespace: argocd
+  # Add these finalizers to prevent accidental deletion
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ayshsens/Gitops-ETH-test.git
+    path: charts/geth
+    targetRevision: HEAD
+    # You can specify Helm values overrides here
+    helm:
+      values: |
+        # Any values you want to override from values.yaml
+        namespace: ethereum
+        
+        network:
+          name: "sepolia"
+          
+        executionClient:
+          resources:
+            requests:
+              cpu: "1"
+              memory: "4Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+              
+        consensusClient:
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ethereum
+    
+  # Sync policy
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+      - Validate=true
+      
+  # Health assessment  
+  revisionHistoryLimit: 3

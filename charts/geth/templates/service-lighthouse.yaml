@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.consensusClient.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.consensusClient.name }}
+spec:
+  ports:
+  - port: {{ .Values.consensusClient.ports.http }}
+    name: http
+  - port: {{ .Values.consensusClient.ports.metrics }}
+    name: metrics
+  - port: {{ .Values.consensusClient.ports.p2p }}
+    name: p2p-tcp
+    protocol: TCP
+  - port: {{ .Values.consensusClient.ports.p2p }}
+    name: p2p-udp
+    protocol: UDP
+  clusterIP: None
+  selector:
+    app: {{ .Values.consensusClient.name }}
+
+---
+{{- if .Values.consensusClient.service.publicService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.consensusClient.name }}-public
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.consensusClient.name }}
+spec:
+  ports:
+  - port: {{ .Values.consensusClient.ports.http }}
+    name: http
+    targetPort: {{ .Values.consensusClient.ports.http }}
+  selector:
+    app: {{ .Values.consensusClient.name }}
+  type: {{ .Values.consensusClient.service.publicService.type }}
+{{- end }}

@@ -1,0 +1,93 @@
+nameOverride: ""
+fullnameOverride: ""
+
+namespace: ethereum
+
+network:
+  name: "sepolia"
+  id: 11155111
+  checkpointSyncUrl: "https://sepolia.beaconstate.info"
+
+jwtSecret:
+  hex: "0xd46fa25f2df7cd76d684243ce956acfd4f50f875154ebb85489a6289d2c9ef44"
+
+executionClient:
+  name: "geth-testnet"
+  image:
+    repository: ethereum/client-go
+    tag: stable
+    pullPolicy: IfNotPresent
+  config:
+    dataDir: "/data"
+    syncMode: "full"
+    maxPeers: 50
+    cache: 4096
+    txLookupLimit: 0
+    verbosity: 3
+  resources:
+    requests:
+      cpu: "1"
+      memory: "4Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  storage:
+    size: 50Gi
+    storageClassName: "standard"
+  service:
+    type: ClusterIP
+    publicService:
+      enabled: false
+      type: NodePort
+  ports:
+    http: 8545
+    ws: 8546
+    engine: 8551
+    metrics: 6060
+    discovery: 30303
+  probes:
+    readiness:
+      initialDelaySeconds: 60
+      periodSeconds: 30
+    liveness:
+      initialDelaySeconds: 120
+      periodSeconds: 60
+
+consensusClient:
+  name: "lighthouse-testnet"
+  image:
+    repository: sigp/lighthouse
+    tag: latest
+    pullPolicy: IfNotPresent
+  config:
+    dataDir: "/data"
+    graffiti: "k8s-testnet-lighthouse"
+    debugLevel: "info"
+  resources:
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  storage:
+    size: 50Gi
+    storageClassName: "standard"
+  service:
+    type: ClusterIP
+    publicService:
+      enabled: true
+      type: NodePort
+  ports:
+    http: 5052
+    metrics: 5054
+    p2p: 9000
+  probes:
+    readiness:
+      initialDelaySeconds: 60
+      periodSeconds: 30
+      timeoutSeconds: 10
+    liveness:
+      initialDelaySeconds: 120
+      periodSeconds: 60
+      timeoutSeconds: 10

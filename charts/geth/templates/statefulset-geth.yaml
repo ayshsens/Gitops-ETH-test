@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.executionClient.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  serviceName: "{{ .Values.executionClient.name }}"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.executionClient.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.executionClient.name }}
+    spec:
+      containers:
+      - name: geth
+        image: "{{ .Values.executionClient.image.repository }}:{{ .Values.executionClient.image.tag }}"
+        imagePullPolicy: {{ .Values.executionClient.image.pullPolicy }}
+        args:
+          - "--config=/config/geth-config.toml"
+          - "--{{ .Values.network.name }}"
+          - "--http"
+          - "--http.api=eth,net,web3,txpool,debug,engine"
+          - "--ws"
+          - "--ws.api=eth,net,web3,txpool,debug,engine"
+          - "--metrics"
+          - "--metrics.addr=0.0.0.0"
+          - "--metrics.port={{ .Values.executionClient.ports.metrics }}"
+          - "--ipcpath={{ .Values.executionClient.config.dataDir }}/geth.ipc"
+          - "--authrpc.addr=0.0.0.0"
+          - "--authrpc.port={{ .Values.executionClient.ports.engine }}"
+          - "--authrpc.vhosts=*"
+          - "--authrpc.jwtsecret=/secrets/jwt.hex"
+          - "--maxpeers={{ .Values.executionClient.config.maxPeers }}"
+          - "--cache={{ .Values.executionClient.config.cache }}"
+          - "--txlookuplimit={{ .Values.executionClient.config.txLookupLimit }}"
+          - "--syncmode={{ .Values.executionClient.config.syncMode }}"
+        env:
+          - name: GETH_VERBOSITY
+            value: "{{ .Values.executionClient.config.verbosity }}"
+        ports:
+        - containerPort: {{ .Values.executionClient.ports.http }}
+          name: rpc
+        - containerPort: {{ .Values.executionClient.ports.ws }}
+          name: ws
+        - containerPort: {{ .Values.executionClient.ports.engine }}
+          name: engine
+        - containerPort: {{ .Values.executionClient.ports.metrics }}
+          name: metrics
+        - containerPort: {{ .Values.executionClient.ports.discovery }}
+          name: discovery-tcp
+          protocol: TCP
+        - containerPort: {{ .Values.executionClient.ports.discovery }}
+          name: discovery-udp
+          protocol: UDP
+        resources:
+          requests:
+            cpu: "{{ .Values.executionClient.resources.requests.cpu }}"
+            memory: "{{ .Values.executionClient.resources.requests.memory }}"
+          limits:
+            cpu: "{{ .Values.executionClient.resources.limits.cpu }}"
+            memory: "{{ .Values.executionClient.resources.limits.memory }}"
+        volumeMounts:
+        - name: geth-data
+          mountPath: {{ .Values.executionClient.config.dataDir }}
+        - name: geth-config
+          mountPath: /config
+        - name: jwt-secret
+          mountPath: /secrets
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.executionClient.ports.http }}
+          initialDelaySeconds: {{ .Values.executionClient.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.executionClient.probes.readiness.periodSeconds }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.executionClient.ports.http }}
+          initialDelaySeconds: {{ .Values.executionClient.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.executionClient.probes.liveness.periodSeconds }}
+      volumes:
+      - name: geth-config
+        configMap:
+          name: geth-config
+      - name: jwt-secret
+        configMap:
+          name: jwt-secret
+  volumeClaimTemplates:
+  - metadata:
+      name: geth-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "{{ .Values.executionClient.storage.storageClassName }}"
+      resources:
+        requests:
+          storage: {{ .Values.executionClient.storage.size }}

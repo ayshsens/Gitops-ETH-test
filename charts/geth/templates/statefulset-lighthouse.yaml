@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.consensusClient.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  serviceName: "{{ .Values.consensusClient.name }}"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.consensusClient.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.consensusClient.name }}
+    spec:
+      containers:
+      - name: lighthouse
+        image: "{{ .Values.consensusClient.image.repository }}:{{ .Values.consensusClient.image.tag }}"
+        imagePullPolicy: {{ .Values.consensusClient.image.pullPolicy }}
+        command:
+          - lighthouse
+          - beacon_node
+          - --network={{ .Values.network.name }}
+          - --execution-endpoint=http://{{ .Values.executionClient.name }}:{{ .Values.executionClient.ports.engine }}
+          - --execution-jwt=/secrets/jwt.hex
+          - --checkpoint-sync-url={{ .Values.network.checkpointSyncUrl }}
+          - --http
+          - --http-address=0.0.0.0
+          - --http-port={{ .Values.consensusClient.ports.http }}
+          - --metrics
+          - --metrics-address=0.0.0.0
+          - --metrics-port={{ .Values.consensusClient.ports.metrics }}
+          - --datadir={{ .Values.consensusClient.config.dataDir }}
+          - --debug-level={{ .Values.consensusClient.config.debugLevel }}
+        ports:
+        - containerPort: {{ .Values.consensusClient.ports.http }}
+          name: http
+        - containerPort: {{ .Values.consensusClient.ports.metrics }}
+          name: metrics
+        - containerPort: {{ .Values.consensusClient.ports.p2p }}
+          name: p2p-tcp
+          protocol: TCP
+        - containerPort: {{ .Values.consensusClient.ports.p2p }}
+          name: p2p-udp
+          protocol: UDP
+        resources:
+          requests:
+            cpu: "{{ .Values.consensusClient.resources.requests.cpu }}"
+            memory: "{{ .Values.consensusClient.resources.requests.memory }}"
+          limits:
+            cpu: "{{ .Values.consensusClient.resources.limits.cpu }}"
+            memory: "{{ .Values.consensusClient.resources.limits.memory }}"
+        volumeMounts:
+        - name: lighthouse-data
+          mountPath: {{ .Values.consensusClient.config.dataDir }}
+        - name: jwt-secret
+          mountPath: /secrets
+        readinessProbe:
+          httpGet:
+            path: /eth/v1/node/health
+            port: {{ .Values.consensusClient.ports.http }}
+          initialDelaySeconds: {{ .Values.consensusClient.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.consensusClient.probes.readiness.periodSeconds }}
+          timeoutSeconds: {{ .Values.consensusClient.probes.readiness.timeoutSeconds }}
+        livenessProbe:
+          httpGet:
+            path: /eth/v1/node/health
+            port: {{ .Values.consensusClient.ports.http }}
+          initialDelaySeconds: {{ .Values.consensusClient.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.consensusClient.probes.liveness.periodSeconds }}
+          timeoutSeconds: {{ .Values.consensusClient.probes.liveness.timeoutSeconds }}
+      initContainers:
+      - name: wait-for-geth
+        image: busybox
+        command: ['sh', '-c', 'until nc -z {{ .Values.executionClient.name }} {{ .Values.executionClient.ports.engine }}; do echo waiting for geth; sleep 5; done;']
+      volumes:
+      - name: jwt-secret
+        configMap:
+          name: jwt-secret
+  volumeClaimTemplates:
+  - metadata:
+      name: lighthouse-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "{{ .Values.consensusClient.storage.storageClassName }}"
+      resources:
+        requests:
+          storage: {{ .Values.consensusClient.storage.size }}

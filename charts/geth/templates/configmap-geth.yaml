@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: geth-config
+  namespace: {{ .Values.namespace }}
+data:
+  geth-config.toml: |
+    [Node]
+    DataDir = "{{ .Values.executionClient.config.dataDir }}"
+    IPCPath = "geth.ipc"
+    HTTPHost = "0.0.0.0"
+    HTTPPort = {{ .Values.executionClient.ports.http }}
+    HTTPVirtualHosts = ["*"]
+    HTTPModules = ["eth", "net", "web3", "txpool", "debug", "engine"]
+    WSHost = "0.0.0.0"
+    WSPort = {{ .Values.executionClient.ports.ws }}
+    WSModules = ["eth", "net", "web3", "txpool", "debug", "engine"]
+    WSOrigins = ["*"]
+    AuthAddr = "0.0.0.0"
+    AuthPort = {{ .Values.executionClient.ports.engine }}
+    AuthVirtualHosts = ["*"]
+    JWTSecret = "/secrets/jwt.hex"
+
+    [Eth]
+    SyncMode = "{{ .Values.executionClient.config.syncMode }}"
+    NetworkId = {{ .Values.network.id }}
+
+    [Node.P2P]
+    MaxPeers = {{ .Values.executionClient.config.maxPeers }}
+    NoDiscovery = false

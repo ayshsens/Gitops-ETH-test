@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.executionClient.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.executionClient.name }}
+spec:
+  ports:
+  - port: {{ .Values.executionClient.ports.http }}
+    name: rpc
+  - port: {{ .Values.executionClient.ports.ws }}
+    name: ws
+  - port: {{ .Values.executionClient.ports.engine }}
+    name: engine
+  - port: {{ .Values.executionClient.ports.metrics }}
+    name: metrics
+  - port: {{ .Values.executionClient.ports.discovery }}
+    name: discovery-tcp
+    protocol: TCP
+  - port: {{ .Values.executionClient.ports.discovery }}
+    name: discovery-udp
+    protocol: UDP
+  clusterIP: None
+  selector:
+    app: {{ .Values.executionClient.name }}

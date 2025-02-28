@@ -1,0 +1,6 @@
+apiVersion: v2
+name: ethereum-node
+description: A Helm chart for Ethereum nodes (Geth + Lighthouse)
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
