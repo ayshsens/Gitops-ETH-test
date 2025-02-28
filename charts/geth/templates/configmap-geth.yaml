@@ -23,7 +23,7 @@ data:
 
     [Eth]
     SyncMode = "{{ .Values.executionClient.config.syncMode }}"
-    NetworkId = {{ .Values.network.id }}
+    NetworkId = {{ int .Values.network.id }}
 
     [Node.P2P]
     MaxPeers = {{ .Values.executionClient.config.maxPeers }}
