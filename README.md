@@ -52,7 +52,8 @@ git clone https://github.com/ayushvgcsns/Gitops-ETH.git
 cd Gitops-ETH
 
 # Start Minikube
-minikube start --nodes 2 --cpus 4 --memory 8192 --disk-size 50g
+minikube start --nodes 1 --cpus 8 --memory 15360 --disk-size 300g
+minikube addons enable ingress
 
 # Generate certificates
 cd manifests/certificates
