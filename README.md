@@ -19,28 +19,7 @@ Minimum hardware requirements:
 ## Repository Structure
 
 ```
-.
-├── README.md
-├── charts/
-│   ├── geth/                   # Geth Helm chart
-│   │   ├── Chart.yaml
-│   │   ├── values.yaml
-│   │   └── templates/
-│   │       ├── statefulset.yaml
-│   │       ├── service.yaml
-│   │       └── ingress.yaml
-|   |       └── configmap.yaml
-│   └── monitoring/             # Monitoring configuration
-│       └── values-custom.yaml
-├── manifests/
-│   ├── argocd/                # ArgoCD configuration
-│   │   └── application.yaml
-│   ├── ingress-nginx/         # Ingress controller config
-│   │   └── values-custom.yaml
-│   └── certificates/          # SSL certificate generation
-│       └── generate-certs.sh
-└── dashboards/                # Grafana dashboards
-    └── geth-metrics.json
+
 ```
 
 ## Quick Start
@@ -59,7 +38,6 @@ minikube addons enable ingress
 kubectl create namespace ethereum
 kubectl create namespace monitoring
 kubectl create namespace argocd
-
 
 # Install ArgoCD
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
