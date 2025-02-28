@@ -97,12 +97,7 @@ consensusClient:
 ingress:
   enabled: true
   className: "nginx"
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
   rpcHost: "geth-rpc.local"
   enableWs: true
   wsHost: "geth-ws.local"
-  wsAnnotations:
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   tlsSecretName: "geth-tls"
