@@ -22,7 +22,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ .Values.executionClient.name }}-public
+            name: {{ .Values.executionClient.name }}
             port:
               number: {{ .Values.executionClient.ports.http }}
 ---
@@ -52,7 +52,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ .Values.executionClient.name }}-public
+            name: {{ .Values.executionClient.name }}
             port:
               number: {{ .Values.executionClient.ports.ws }}
 {{- end }}
