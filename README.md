@@ -14,7 +14,7 @@ Required tools and versions:
 Minimum hardware requirements:
 - CPU: 4 cores
 - RAM: 8GB
-- Storage: 200GB
+- Storage: 300GB
 
 ## Repository Structure
 
@@ -52,24 +52,14 @@ git clone https://github.com/ayushvgcsns/Gitops-ETH.git
 cd Gitops-ETH
 
 # Start Minikube
-minikube start --nodes 1 --cpus 8 --memory 15360 --disk-size 300g
+minikube start --cpus 8 --memory 7168 --disk-size 300g --nodes 2
 minikube addons enable ingress
-
-# Generate certificates
-cd manifests/certificates
-./generate-certs.sh
-cd ../..
 
 # Install core components
 kubectl create namespace ethereum
 kubectl create namespace monitoring
 kubectl create namespace argocd
 
-# Install Ingress-Nginx
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm install ingress-nginx ingress-nginx/ingress-nginx \
-  -f manifests/ingress-nginx/values-custom.yaml \
-  --namespace ingress-nginx --create-namespace
 
 # Install ArgoCD
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
@@ -80,6 +70,11 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm install monitoring prometheus-community/kube-prometheus-stack \
   -f charts/monitoring/values-custom.yaml \
   --namespace monitoring
+
+# Generate certificates
+cd manifests/certificates
+./generate-certs.sh
+cd ../..
 ```
 
 ## Detailed Setup Guide
