@@ -41,13 +41,44 @@ kubectl create namespace argocd
 
 # Install ArgoCD
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-kubectl apply -f manifests/argocd/application.yaml
+kubectl apply -f argocd/application.yaml
 
-# Install Prometheus & Grafana
+# Install Prometheus & Grafana & Loki
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm install monitoring prometheus-community/kube-prometheus-stack \
-  -f charts/monitoring/values-custom.yaml \
-  --namespace monitoring
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --set grafana.adminPassword=admin \
+  --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false \
+  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
+
+helm install loki grafana/loki-stack \
+  --namespace monitoring \
+  --set grafana.enabled=false \
+  --set prometheus.enabled=false \
+  --set loki.persistence.enabled=true \
+  --set loki.persistence.size=10Gi
+
+kubectl create secret generic additional-scrape-configs \
+  --from-file=prometheus-additional.yaml=<(kubectl get configmap additional-scrape-configs -n monitoring -o jsonpath='{.data.prometheus-additional\.yaml}') \
+  --namespace monitoring \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+# Update Prometheus with the new configuration
+helm upgrade prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --set grafana.adminPassword=admin \
+  --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false \
+  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
+  --set prometheus.prometheusSpec.additionalScrapeConfigsSecret.enabled=true \
+  --set prometheus.prometheusSpec.additionalScrapeConfigsSecret.name=additional-scrape-configs \
+  --set prometheus.prometheusSpec.additionalScrapeConfigsSecret.key=prometheus-additional.yaml
+
+kubectl apply -f loki-datasource.yaml
+GRAFANA_POD=$(kubectl get pods -n monitoring -l app.kubernetes.io/name=grafana -o jsonpath="{.items[0].metadata.name}")
+kubectl delete pod $GRAFANA_POD -n monitoring
 
 # Generate certificates
 cd manifests/certificates
